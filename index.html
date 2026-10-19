@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misi Menyelamatkan Galeri Seni - Escape Room PSV</title>
+    <!-- Tailwind CSS untuk susun atur responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts untuk tipografi premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0f172a;
+        }
+        .font-title {
+            font-family: 'Cinzel', serif;
+        }
+        .custom-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+        }
+        .royalty-border {
+            border-image: linear-gradient(to right, #e2e8f0, #eab308, #e2e8f0) 1;
+        }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen flex flex-col justify-between">
+
+    <!-- Navigasi Atas / Header Papan Mata -->
+    <header class="bg-slate-900 border-b border-yellow-600/30 p-4 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <h1 class="font-title text-xl text-yellow-500 tracking-wider text-center sm:text-left">
+                MISI MENYELAMATKAN GALERI SENI
+            </h1>
+            <div id="stats-bar" class="hidden flex items-center gap-4 text-sm font-semibold">
+                <div class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
+                    Mata: <span id="score-val" class="text-yellow-400 text-base">0</span>
+                </div>
+                <div class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
+                    Kemajuan: <span id="progress-val" class="text-green-400 text-base">0/10</span>
+                </div>
+                <div class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
+                    Ruang: <span id="room-val" class="text-cyan-400">Balai Diraja</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Kandungan Utama Permainan -->
+    <main class="flex-grow max-w-3xl w-full mx-auto p-4 flex items-center justify-center">
+        
+        <!-- Peringkat 0: Mula Permainan -->
+        <div id="start-screen" class="custom-card p-6 sm:p-8 rounded-2xl w-full text-center shadow-2xl transition-all duration-300">
+            <div class="w-20 h-20 bg-yellow-500/10 border border-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+            </div>
+            <h2 class="font-title text-2xl sm:text-3xl text-yellow-400 mb-4 tracking-wide">AMARAN: SISTEM TERKUNCI!</h2>
+            <p class="text-slate-400 text-sm sm:text-base mb-6 leading-relaxed">
+                Sistem keselamatan utama Galeri Seni Visual Mega telah terganggu dan mengunci semua pintu keluar! 
+                Sebagai <strong>Wira Seni Tunggal</strong>, anda perlu memulihkan 4 ruangan galeri utama dengan menyelesaikan 10 rangkaian cabaran teka-teki untuk mendapatkan kod pelepasan keselamatan.
+            </p>
+            <div class="mb-6 max-w-sm mx-auto">
+                <label for="player-name" class="block text-left text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Nama Wira Anda:</label>
+                <input type="text" id="player-name" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-yellow-500 transition-colors" placeholder="Masukkan nama anda..." value="Wira Seni">
+            </div>
+            <button onclick="startGame()" class="w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-slate-950 font-bold px-6 py-3 rounded-xl transition-all transform hover:scale-[1.02] shadow-lg shadow-yellow-500/20">
+                MULAKAN MISI SEKARANG
+            </button>
+        </div>
+
+        <!-- Peringkat Permainan: Kotak Cabaran Dinamik -->
+        <div id="game-screen" class="hidden custom-card p-6 sm:p-8 rounded-2xl w-full shadow-2xl">
+            
+            <!-- Petunjuk Visual Atas Ruang -->
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-700/50">
+                <span id="display-location" class="text-xs uppercase tracking-widest text-cyan-400 font-bold">LOKASI: BALAI DIRAJA</span>
+                <span id="display-level" class="text-xs font-bold text-slate-400 bg-slate-800 px-2.5 py-1 rounded-md">CABARAN 1/10</span>
+            </div>
+
+            <!-- Situasi Penceritaan Cerita -->
+            <div class="bg-slate-900/60 p-4 rounded-xl border-l-4 border-yellow-500 mb-6 text-sm sm:text-base">
+                <p id="display-situation" class="italic text-slate-300"></p>
+            </div>
+
+            <!-- Pernyataan Soalan Tugasan -->
+            <div class="mb-6">
+                <h3 id="display-question" class="text-base sm:text-lg font-bold text-slate-100 leading-snug"></h3>
+                
+                <!-- Kawasan Imej/Visual Tambahan Pembelajaran (Jika Ada) -->
+                <div id="visual-container" class="mt-4 hidden flex justify-center bg-slate-950 p-2 rounded-xl border border-slate-800">
+                    <img id="display-visual" src="" alt="Petunjuk Seni" class="max-h-64 object-contain rounded-lg">
+                </div>
+            </div>
+
+            <!-- Tugasan Maklumbalas Alasan (Untuk Soalan Esei/Menaakul) -->
+            <div id="reasoning-box" class="hidden mb-6">
+                <label class="block text-xs font-bold text-yellow-500 uppercase tracking-wider mb-2">Nyatakan Alasan / Pemerhatian Seni Anda (Wajib):</label>
+                <textarea id="reason-text" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-300 focus:outline-none focus:border-cyan-500" placeholder="Berikan ulasan/sebab logik mengikut pemahaman seni visual anda..."></textarea>
+            </div>
+
+            <!-- Pilihan Jawapan Objektif A, B, C, D -->
+            <div id="options-container" class="grid grid-cols-1 gap-3 mb-6">
+                <!-- Dijana Dinamik oleh JS -->
+            </div>
+
+            <!-- Kawasan Kotak Maklum Balas Semakan Sistem -->
+            <div id="feedback-box" class="hidden p-4 rounded-xl mb-6 text-sm font-medium transition-all duration-300">
+                <p id="feedback-text"></p>
+            </div>
+
+            <!-- Butang Tindakan Pengawal -->
+            <div class="flex flex-col sm:flex-row gap-3 justify-between items-center">
+                <button onclick="requestHint()" id="hint-btn" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold px-4 py-2.5 rounded-xl border border-slate-700 transition-colors">
+                    Dapatkan Petunjuk (-2 Mata)
+                </button>
+                <button onclick="submitAnswer()" id="action-btn" class="w-full sm:w-auto bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl transition-all shadow-md shadow-cyan-500/10">
+                    HANTAR JAWAPAN
+                </button>
+            </div>
+        </div>
+
+        <!-- Peringkat Akhir: Tamat & Rumusan Misi -->
+        <div id="end-screen" class="hidden custom-card p-6 sm:p-8 rounded-2xl w-full text-center shadow-2xl">
+            <div class="w-20 h-20 bg-green-500/10 border border-green-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h2 class="font-title text-2xl sm:text-3xl text-green-400 mb-2 tracking-wide">MISI SELESAI! PINTU DIBUKA!</h2>
+            <p id="congrats-text" class="text-slate-300 text-sm sm:text-base mb-6"></p>
+            
+            <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800 text-left max-w-md mx-auto mb-6 text-sm">
+                <h4 class="font-bold text-yellow-500 mb-3 border-b border-slate-700 pb-2">📋 Laporan Prestasi Analisis Seni:</h4>
+                <div class="space-y-2 text-slate-300">
+                    <p>Total Skor Anda: <span id="final-score" class="font-bold text-white"></span> Mata</p>
+                    <p>Percubaan Salah: <span id="final-wrong" class="font-bold text-red-400"></span> kali</p>
+                    <p id="review-recommendation" class="mt-3 text-xs text-slate-400 leading-relaxed"></p>
+                </div>
+            </div>
+
+            <button onclick="location.reload()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-3 rounded-xl border border-slate-700 transition-all">
+                Main Semula
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Kaki Fail / Footer -->
+    <footer class="text-center p-4 text-xs text-slate-500 border-t border-slate-900 bg-slate-950">
+        Kurikulum Standard Sekolah Menengah (KSSM) • Pendidikan Seni Visual Tingkatan 4 • Permainan Edu-Escape
+    </footer>
+
+    <!-- Logik Enjin Permainan JavaScript -->
+    <script>
+        // Pangkalan Data 10 Soalan Komprehensif Berdasarkan Fail Ujian 1 PSV T4
+        const gameQuestions = [
+            {
+                id: 1,
+                room: "Balai Diraja",
+                location: "Pintu Masuk Utama Balai Diraja",
+                situation: "Pintu besi digital ini dikunci. Anda perlu menapis senarai dan memilih gubahan item yang tepat yang dikategorikan sebagai Alat Kebesaran Diraja.",
+                question: "Antara berikut yang manakah alat kebesaran diRaja?\nI. Cokmar\nII. Pending Diraja\nIII. Keris Pendek Diraja\nIV. Tombak Berambu",
+                options: [
+                    { key: "A", text: "I dan II" },
+                    { key: "B", text: "I dan IV" },
+                    { key: "C", text: "II dan III" },
+                    { key: "D", text: "III dan IV" }
+                ],
+                correct: "B",
+                hint: "Cokmar dan Tombak Berambu ialah senjata rasmi istiadat, manakala Pending dan Keris Pendek dikelompokkan sebagai Pakaian/Perhiasan Diraja.",
+                explanation: "Cokmar dan Tombak Berambu ialah contoh Alat Kebesaran, manakala Pending dan Keris Pendek Diraja dikategorikan sebagai pakaian rasmi perhiasan Diraja.",
+                visual: "",
+                type: "objective"
+            },
+            {
+                id: 2,
+                room: "Balai Diraja",
+                location: "Ruang Arca Pameran Utama",
+                situation: "Sebuah replika Keris Panjang Diraja dipamerkan di dalam peti kaca kawalan digital. Kenal pasti anatomi ukiran simbolik negeri pada komponen struktur yang tepat.",
+                question: "Pada bahagian manakah diukir Kerajaan Persekutuan dan lambang 11 buah negeri Tanah Melayu pada struktur Keris Panjang Diraja?",
+                options: [
+                    { key: "A", text: "A - Hulu Keris" },
+                    { key: "B", text: "B - Sampir (Batang atas)" },
+                    { key: "C", text: "C - Batang Sarung tengah" },
+                    { key: "D", text: "D - Hujung Sarung" }
+                ],
+                correct: "B",
+                hint: "Ukiran lambang 11 negeri diletakkan berhampiran pangkal hulu, iaitu pada komponen kayu hiasan atas sarung.",
+                explanation: "Lambang Kerajaan Persekutuan dan 11 buah negeri Tanah Melayu diukir dengan megah pada bahagian Sampir keris tersebut.",
+                visual: "https://placehold.co/400x200/1e293b/ffffff?text=Keris+Panjang+Diraja+[A:Hulu,+B:Sampir,+C:Sarung]",
+                type: "objective"
+            },
+            {
+                id: 3,
+                room: "Balai Diraja",
+                location: "Pintu Vault Keselamatan",
+                situation: "Sekeping perhiasan emas bertatah permata merah dipaparkan pada mangga pengimbas digital. Nyatakan nama perhiasan itu beserta fungsinya dengan tepat untuk melepasi Balai Diraja.",
+                question: "Apakah nama bagi perhiasan Diraja bertatah permata delima ini serta fungsinya yang betul?",
+                options: [
+                    { key: "A", text: "Gandik Diraja — Perhiasan pada dada" },
+                    { key: "B", text: "Gandik Diraja — Perhiasan ulu (kepala)" },
+                    { key: "C", text: "Pending Diraja — Pelengkap pada bahu" },
+                    { key: "D", text: "Pending Diraja — Pengancing bengkung / tali pinggang" }
+                ],
+                correct: "D",
+                hint: "Bentuknya bujur keemasan dan bertindak sebagai kepala tali pinggang pakaian rasmi Seri Paduka Baginda Yang di-Pertuan Agong.",
+                explanation: "Objek tersebut ialah Pending Diraja yang berfungsi khusus sebagai pengancing bengkung (kepala tali pinggang rasmi).",
+                visual: "https://placehold.co/400x200/1e293b/ffffff?text=Perhiasan+Emas+Bujur+Paling+Tengah+Lambang+Negara",
+                type: "objective"
+            },
+            {
+                id: 4,
+                room: "Studio Lukisan",
+                location: "Pintu Gerbang Aliran Seni",
+                situation: "Anda telah memasuki Studio Lukisan. Untuk membuka kunci arkib digital, anda dikehendaki menganalisis sejarah seni lukis Barat secara kronologi kelahiran terawal.",
+                question: "Susun semula aliran seni lukis berikut mengikut tahun kelahiran aliran yang paling awal: Baroque, Renaissance, Neoklasisisme, Rococo.",
+                options: [
+                    { key: "A", text: "Renaissance, Baroque, Rococo dan Neoklasisisme" },
+                    { key: "B", text: "Baroque, Renaissance, Rococo dan Neoklasisisme" },
+                    { key: "C", text: "Neoklasisisme, Baroque, Renaissance dan Rococo" },
+                    { key: "D", text: "Rococo, Neoklasisisme, Baroque dan Renaissance" }
+                ],
+                correct: "A",
+                hint: "Ingat kembali, era kelahiran semula seni (abad ke-14 hingga 16) sentiasa menjadi pelopor awal sebelum bermulanya gaya hiasan padat Baroque.",
+                explanation: "Susunan kronologi seni Barat yang betul bermula daripada zaman Renaissance, diikuti zaman Baroque, Rococo, dan akhir sekali Neoklasisisme.",
+                visual: "",
+                type: "objective"
+            },
+            {
+                id: 5,
+                room: "Studio Lukisan",
+                location: "Meja Ujian Media Media",
+                situation: "Sistem memaparkan sebuah ilustrasi potret wajah dengan teknik jalinan garisan halus silang-menyilang yang sangat kompleks hasil era klasik lama.",
+                question: "Ilustrasi garisan buatan Michelangelo Buonarroti menggunakan teknik perlukisan yang mana satu?",
+                options: [
+                    { key: "A", text: "Teknik Selari" },
+                    { key: "B", text: "Teknik Gosokan" },
+                    { key: "C", text: "Teknik Contengan" },
+                    { key: "D", text: "Teknik Silang pangkah (Cross-hatching)" }
+                ],
+                correct: "D",
+                hint: "Jalinan ton gelap cerah dihasilkan menerusi garisan yang bertindih bersilang antara satu sama lain secara bersudut.",
+                explanation: "Teknik silang pangkah (cross-hatching) merupakan teknik lukisan pen/pensel yang paling dominan digunakan pelukis Renaissance seperti Michelangelo bagi membina nilai bentuk objek.",
+                visual: "https://placehold.co/400x200/1e293b/ffffff?text=Teknik+Jalinan+Garisan+Silang+Pangkah",
+                type: "reasoning"
+            },
+            {
+                id: 6,
+                room: "Dewan Catan",
+                location: "Galeri Potret Renaissance",
+                situation: "Anda kini berada di Dewan Catan yang luas. Sebuah karya agung dunia terpapar di hadapan anda. Kenal pasti pelukis serta tajuknya untuk mengaktifkan suis kuasa kecemasan.",
+                question: "Apakah nama pelukis maestro dan tajuk bagi karya agung catan potret wanita misteri tersenyum ini?",
+                options: [
+                    { key: "A", text: "Leonardo da Vinci — Mona Lisa" },
+                    { key: "B", text: "Michelangelo — Portrait of Princess" },
+                    { key: "C", text: "Masolino — Portrait of a Woman" },
+                    { key: "D", text: "Raphael — Head of Girl" }
+                ],
+                correct: "A",
+                hint: "Karya termasyhur dunia ini menggunakan teknik sfumato halus di Muzium Louvre, Paris.",
+                explanation: "Karya lukisan catan minyak legenda bertajuk Mona Lisa tersebut dihasilkan secara rasmi oleh pelukis agung Leonardo da Vinci.",
+                visual: "https://placehold.co/400x200/1e293b/ffffff?text=Catan+Mona+Lisa+Leonardo+da+Vinci",
+                type: "objective"
+            },
+            {
+                id: 7,
+                room: "Dewan Catan",
+                location: "Zon Perspektif Linear",
+                situation: "Sistem memaparkan satu lukisan catan dinding era Renaissance bertajuk 'St. Peter Healing a Cripple and the Raising of Tabitha, 1425' oleh Masolino da Panicale. Kaji unsur seni utama yang ditonjolkan.",
+                question: "Apakah aspek gubahan ruang geometri yang diberi keutamaan tinggi dalam karya seni catan dinding tersebut?",
+                options: [
+                    { key: "A", text: "Kesan dramatik teknik chiaroscuro" },
+                    { key: "B", text: "Penggunaan perspektif linear satu titik lenyap" },
+                    { key: "C", text: "Penegasan nisbah keemasan" },
+                    { key: "D", text: "Kepelbagaian aksi dinamik figura" }
+                ],
+                correct: "B",
+                hint: "Perhatikan garisan grid seni bina bangunan yang semuanya menumpu pada satu titik fokus di tengah latar.",
+                explanation: "Pelukis Masolino da Panicale memberikan penekanan luar biasa kepada reka bentuk perspektif linear satu titik lenyap untuk mewujudkan ilusi kedalaman ruang.",
+                visual: "https://placehold.co/400x200/1e293b/ffffff?text=Perspektif+Linear+Satu+Titik+Lenyap",
+                type: "objective"
+            },
+            {
+                id: 8,
+                room: "Dewan Catan",
+                location: "Bilik Analisis Aliran Seni",
+                situation: "Mangga keselamatan bilik memaparkan perbandingan kritikal antara dua aliran catan terkemuka Barat. Anda perlu menyatakan perbezaan fizikal utama ciri seni mereka.",
+                question: "Pilih gubahan perbezaan ciri rekaan yang paling tepat di antara aliran Realisme dan Impresionisme.",
+                options: [
+                    { key: "A", text: "Realisme: Warna teliti menyerupai sebenar | Impresionisme: Sapuan berus secara spontan" },
+                    { key: "B", text: "Realisme: Menggunakan cat minyak | Impresionisme: Menggunakan cat air sahaja" },
+                    { key: "C", text: "Realisme: Penekanan perspektif | Impresionisme: Penekanan nisbah keemasan" },
+                    { key: "D", text: "Realisme: Catan luar studio | Impresionisme: Catan dihasilkan dalam studio" }
+                ],
+                correct: "A",
+                hint: "Impresionisme mengutamakan tangkapan kesan cahaya secara pantas menerusi palitan warna kasar spontan, berbeza dengan Realisme yang merakam objek seadanya secara objektif.",
+                explanation: "Perbezaan utama yang paling ketara ialah Realisme mengutamakan ketepatan warna objek menyerupai realiti sebenar, manakala Impresionisme menggunakan sapuan berus pendek dan spontan untuk merakam kesan cahaya.",
+                visual: "",
+                type: "reasoning"
+            },
+            {
+                id: 9,
+                room: "Bengkel Cetakan",
+                location: "Stesen Kaedah Cetakan",
+                situation: "Pintu keluar galeri terakhir berada di Bengkel Cetakan. Skrin memaparkan gambar tangan artis yang sedang menggores plat logam menggunakan jarum keluli tajam.",
+                question: "Gambar rajah memaparkan satu proses menghasilkan cetakan. Apakah jenis kaedah cetakan utama tersebut?",
+                options: [
+                    { key: "A", text: "Cetakan Timbulan (Relief)" },
+                    { key: "B", text: "Cetakan Benaman (Intaglio)" },
+                    { key: "C", text: "Cetakan Planografi (Litografi)" },
+                    { key: "D", text: "Cetakan Saring Sutera (Stensil)" }
+                ],
+                correct: "B",
+                hint: "Imej terhasil daripada garisan goresan yang menampung dakwat di dalam alur plat, bukannya di atas permukaan yang timbul.",
+                explanation: "Proses menggores plat logam (seperti zink atau tembaga) tergolong di bawah kaedah Cetakan Benaman atau Intaglio.",
+                visual: "https://placehold.co/400x200/1e293b/ffffff?text=Menggores+Plat+Logam+Jarum+Gores",
+                type: "objective"
+            },
+            {
+                id: 10,
+                room: "Bengkel Cetakan",
+                location: "Pintu Keluar Utama Pelepasan",
+                situation: "Cabaran ke-10! Kod pelepasan lif akhir memerlukan anda menetapkan kedudukan fizikal dakwat ketika proses cetakan intaglio dijalankan.",
+                question: "Di manakah kedudukan dakwat cetakan yang betul bagi menghasilkan imej mengikut kaedah cetakan benaman (intaglio)?",
+                options: [
+                    { key: "A", text: "Terletak di atas alur blok kayu" },
+                    { key: "B", text: "Terletak di dalam alur blok kayu" },
+                    { key: "C", text: "Terletak di dalam alur plat logam" },
+                    { key: "D", text: "Terletak di luar alur plat logam" }
+                ],
+                correct: "C",
+                hint: "Intaglio bermaksud imej terhasil daripada dakwat yang dimasukkan ke dalam alur lekukan plat logam yang telah digores.",
+                explanation: "Bagi kaedah cetakan benaman (intaglio), dakwat cetakan akan disapu masuk dan terperangkap di dalam alur lekukan plat logam sebelum dipres pada kertas.",
+                visual: "",
+                type: "objective"
+            }
+        ];
+
+        // Keadaan Pembolehubah Global Aplikasi Permainan
+        let currentLevel = 0; 
+        let score = 0;
+        let wrongAttempts = 0;
+        let playerName = "Wira Seni";
+        let isAnswerSubmitted = false;
+
+        // Fungsi Memulakan Permainan
+        function startGame() {
+            const nameInput = document.getElementById('player-name').value.trim();
+            if(nameInput) {
+                playerName = nameInput;
+            }
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('stats-bar').classList.remove('hidden');
+            
+            loadChallenge();
+        }
+
+        // Fungsi Memaparkan Kandungan Cabaran Semasa
+        function loadChallenge() {
+            isAnswerSubmitted = false;
+            const data = gameQuestions[currentLevel];
+            
+            // Kemaskini Data Papan Peta Status
+            document.getElementById('display-location').innerText = `LOKASI: ${data.room} (${data.location})`;
+            document.getElementById('display-level').innerText = `CABARAN ${data.id}/10`;
+            document.getElementById('display-situation').innerText = `"${data.situation}"`;
+            document.getElementById('display-question').innerText = data.question;
+            
+            // Menguruskan Paparan Imej Visual Fail
+            const visualBox = document.getElementById('visual-container');
+            const visualImg = document.getElementById('display-visual');
+            if(data.visual) {
+                visualImg.src = data.visual;
+                visualBox.classList.remove('hidden');
+            } else {
+                visualBox.classList.add('hidden');
+            }
+
+            // Menguruskan Keperluan Kotak Penaakulan Esei/Sebab
+            const reasoningBox = document.getElementById('reasoning-box');
+            document.getElementById('reason-text').value = ""; // Reset textarea
+            if(data.type === "reasoning") {
+                reasoningBox.classList.remove('hidden');
+            } else {
+                reasoningBox.classList.add('hidden');
+            }
+
+            // Membina Butang Pilihan Jawapan Objektif A, B, C, D
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = "";
+            
+            data.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.id = `btn-opt-${opt.key}`;
+                btn.className = "w-full text-left bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 px-4 py-3.5 rounded-xl transition-all flex items-center gap-3 text-sm font-medium";
+                btn.onclick = () => selectOption(opt.key);
+                btn.innerHTML = `<span class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-600 flex items-center justify-center font-bold text-yellow-500">${opt.key}</span> <span class="text-slate-200">${opt.text}</span>`;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Set Semula Rupa Kotak Maklumbalas Semakan
+            const feedbackBox = document.getElementById('feedback-box');
+            feedbackBox.className = "hidden p-4 rounded-xl mb-6 text-sm font-medium transition-all duration-300";
+            feedbackBox.innerHTML = "";
+
+            // Reset Butang Utama
+            const actionBtn = document.getElementById('action-btn');
+            actionBtn.innerText = "HANTAR JAWAPAN";
+            actionBtn.onclick = submitAnswer;
+            
+            document.getElementById('hint-btn').disabled = false;
+            
+            // Kemaskini Statistik Panel Navigasi
+            updateStats();
+        }
+
+        let selectedKey = null;
+
+        // Fungsi Memilih Pilihan Jawapan Objektif
+        function selectOption(key) {
+            if(isAnswerSubmitted) return;
+            
+            const data = gameQuestions[currentLevel];
+            data.options.forEach(opt => {
+                const target = document.getElementById(`btn-opt-${opt.key}`);
+                if(opt.key === key) {
+                    target.classList.add('border-cyan-500', 'bg-cyan-950/40');
+                    selectedKey = key;
+                } else {
+                    target.classList.remove('border-cyan-500', 'bg-cyan-950/40');
+                }
+            });
+        }
+
+        // Fungsi Meminta Petunjuk
+        function requestHint() {
+            const data = gameQuestions[currentLevel];
+            score = Math.max(0, score - 2); // Tolak 2 mata petunjuk secara konsisten
+            
+            const feedbackBox = document.getElementById('feedback-box');
+            feedbackBox.className = "p-4 bg-yellow-950/40 border border-yellow-600/40 text-yellow-300 rounded-xl mb-6 text-sm";
+            feedbackBox.innerHTML = `<strong>💡 Petunjuk Keselamatan:</strong> ${data.hint}`;
+            
+            updateStats();
+            document.getElementById('hint-btn').disabled = true;
+        }
+
+        // Fungsi Hantar & Semak Jawapan
+        function submitAnswer() {
+            if(!selectedKey) {
+                alert("Sila pilih satu jawapan objektif (A, B, C atau D) terlebih dahulu!");
+                return;
+            }
+
+            const data = gameQuestions[currentLevel];
+            
+            // Semak kewajipan kotak penaakulan alasan jika bertipe reasoning
+            if(data.type === "reasoning") {
+                const reasonVal = document.getElementById('reason-text').value.trim();
+                if(reasonVal.length < 5) {
+                    alert("Sistem mengesan kotak alasan anda kosong atau terlalu pendek. Sila berikan penjelasan ringkas mengapa anda memilih jawapan berkenaan!");
+                    return;
+                }
+            }
+
+            isAnswerSubmitted = true;
+            document.getElementById('hint-btn').disabled = true;
+            
+            const feedbackBox = document.getElementById('feedback-box');
+            
+            if(selectedKey === data.correct) {
+                // JAWAPAN TEPAT BEJAYA
+                score += 10; // Tambah 10 mata asas
+                if(data.type === "reasoning") score += 5; // Bonus mata jawapan menaakul berasaskan hujah
+                
+                feedbackBox.className = "p-4 bg-green-950/50 border border-green-500/40 text-green-300 rounded-xl mb-6 text-sm";
+                feedbackBox.innerHTML = `<strong>🟢 AKSES DIBENARKAN!</strong> Bahas / Konsep Seni: ${data.explanation}`;
+                
+                // Tukar fungsi butang utama ke tahap seterusnya
+                const actionBtn = document.getElementById('action-btn');
+                actionBtn.innerText = "MARA KE CABARAN SETERUSNYA";
+                actionBtn.onclick = nextChallenge;
+            } else {
+                // JAWAPAN SALAH
+                wrongAttempts++;
+                score = Math.max(0, score - 3); // Tolak 3 mata denda
+                
+                feedbackBox.className = "p-4 bg-red-950/50 border border-red-500/40 text-red-300 rounded-xl mb-6 text-sm";
+                feedbackBox.innerHTML = `<strong>🔴 AKSES DITOLAK (KOD RALAT)!</strong> Pilihan jawapan tersebut tidak sepadan dengan logik skema keselamatan. Sistem dikunci semula. Sila cuba lagi!`;
+                
+                isAnswerSubmitted = false; // Buka sekatan semula untuk membenarkan cuba lagi
+            }
+            
+            updateStats();
+        }
+
+        // Fungsi Melompat ke Cabaran Seterusnya / Menamatkan Permainan
+        function nextChallenge() {
+            selectedKey = null;
+            currentLevel++;
+            
+            if(currentLevel < gameQuestions.length) {
+                loadChallenge();
+            } else {
+                endGame();
+            }
+        }
+
+        // Kemaskini Papan Statistik Navigasi Global
+        function updateStats() {
+            document.getElementById('score-val').innerText = score;
+            document.getElementById('progress-val').innerText = `${currentLevel}/10`;
+            
+            const roomVal = document.getElementById('room-val');
+            if(currentLevel < gameQuestions.length) {
+                const currentRoom = gameQuestions[currentLevel].room;
+                roomVal.innerText = currentRoom;
+                
+                // Tukar warna mengikut nama ruang
+                if(currentRoom === "Balai Diraja") roomVal.className = "text-yellow-400";
+                else if(currentRoom === "Seni Lukisan" || currentRoom === "Studio Lukisan") roomVal.className = "text-orange-400";
+                else if(currentRoom === "Dewan Catan") roomVal.className = "text-purple-400";
+                else if(currentRoom === "Bengkel Cetakan") roomVal.className = "text-green-400";
+            }
+        }
+
+        // Menamatkan Permainan & Menyediakan Analisis Kelemahan Murid
+        function endGame() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
+            
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-wrong').innerText = wrongAttempts;
+            
+            document.getElementById('congrats-text').innerText = `Tahniah Wira ${playerName}! Anda berjaya menyelesaikan 10 rantaian teka-teki enkripsi keselamatan dan membuka pintu pelepasan utama lif galeri!`;
+            
+            // Rumusan tajuk ulang kaji automatik jika melakukan kesalahan
+            const recBox = document.getElementById('review-recommendation');
+            if(wrongAttempts === 0) {
+                recBox.innerHTML = `<strong>🌟 Rekod Sempurna!</strong> Anda menunjukkan penguasaan cemerlang gred tinggi dalam memahami Alat Kebesaran, Teknik Lukisan, Perspektif Catan dan Cetakan Barat!`;
+            } else if(wrongAttempts <= 3) {
+                recBox.innerHTML = `<strong>📝 Nota Semakan Sistem:</strong> Prestasi anda sangat baik. Untuk pengukuhan optimum bagi persediaan peperiksaan sekolah, sila lakukan sedikit bacaan tambahan pada tajuk **Seni Catan Barat (Aliran & Teknik)** serta kaedah **Cetakan Benaman (Intaglio)**.`;
+            } else {
+                recBox.innerHTML = `<strong>⚠️ Laporan Ulang Kaji Diperlukan:</strong> Anda dikesan menghadapi kesukaran pada beberapa bahagian soalan visual. Jangan putus asa! Sistem mencadangkan anda mengulangi bacaan teks bagi **Tajuk 1 (Fungsi Alat Kebesaran Diraja)** dan **Tajuk 4 (Perbezaan Kaedah Cetakan Timbulan & Benaman)**.`;
+            }
+        }
+    </script>
+</body>
+</html>
